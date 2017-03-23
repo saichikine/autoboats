@@ -73,7 +73,7 @@ while(True):
     # End timer and print
     end = time.time()
     elapsedTime = end-start
-    #print(elapsedTime)
+    print(elapsedTime)
 
     # Display the resulting frame
     # Much faster without drawing
