@@ -33,28 +33,28 @@ while(True):
     tty.setcbreak(sys.stdin)
     key = ord(sys.stdin.read(1))  # key captures the key-code
 
-    time.sleep(0.100)
+    time.sleep(0.050)
 
     #rotate right if d is pressed
     if key==100: #27 is d key
         ser.write('00aw00030255;'.encode())
-        time.sleep(0.050)
+        time.sleep(0.010)
         ser.write('00aw00030000;'.encode())
 
     #rotate left is a is pressed
     elif key==97: #97 is a key
         ser.write('00aw00090255;'.encode())
-        time.sleep(0.050)
+        time.sleep(0.010)
         ser.write('00aw00090000;'.encode())
 
     #go forward if w is pressed.
     elif key==119: #119 is w key
-        ser.write('00aw00090255;'.encode())
-        time.sleep(0.050)
         ser.write('00aw00030255;'.encode())
-        time.sleep(0.050)
+        time.sleep(0.010)
+        ser.write('00aw00090255;'.encode())
+        time.sleep(0.010)
         ser.write('00aw00030000;'.encode())
-        time.sleep(0.050)
+        time.sleep(0.010)
         ser.write('00aw00090000;'.encode())
 
     elif key==113: #113 is q key
@@ -62,8 +62,12 @@ while(True):
 
     else:
         ser.write('00aw00030000;'.encode())
-        time.sleep(0.050)
+        time.sleep(0.010)
         ser.write('00aw00090000;'.encode())
+
+    # ser.write('00aw00030000;'.encode())
+    # time.sleep(0.010)
+    # ser.write('00aw00090000;'.encode())
 
 os.system('stty sane')
 sys.exit(0)
