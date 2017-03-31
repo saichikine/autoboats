@@ -1,9 +1,10 @@
 import serial
-import string as str
+#import string as str
 import time
 import sys
 import tty
 import os
+#import round
 
 ser = serial.Serial(
     port='/dev/tty.usbserial-A700eSou',
@@ -16,9 +17,9 @@ time.sleep(0.5)
 ser.write('00br000000000500;'.encode())
 
 
-threshold = '100' #threshold pwm value for motor spin
+threshold = '10' #threshold pwm value for motor spin
 
-rampTime = '0050'
+rampTime = '0010'
 close = ';'
 start = '00br0'
 
@@ -45,55 +46,55 @@ while(True):
 
     #Increment left motor speed (+)
     if key==97: #97 is a key
-        if leftPWM + delta <= 250:
+        if (leftPWM + delta) <= 250:
             leftPWM += delta
-        serialString = start+leftPWM+'0'+'300'+rampTime+close
+        serialString = start+str(round(leftPWM))+'0'+'300'+rampTime+close
         ser.write(serialString.encode())
 
     #Decrement left motor speed (-)
     if key==122: #122 is z key
-        if leftPWM - delta >= 100:
+        if (leftPWM - delta) >= int(threshold):
             leftPWM -= delta
-        serialString = start+leftPWM+'0'+'300'+rampTime+close
+        serialString = start+str(round(leftPWM))+'0'+'300'+rampTime+close
         ser.write(serialString.encode())
 
     #Increment right motor speed (+)
     elif key==100: #100 is d key
-        if rightPWM + delta <= 250:
+        if (rightPWM + delta) <= 250:
             rightPWM += delta
-        serialString = start+'300'+'0'+rightPWM+rampTime+close
+        serialString = start+'300'+'0'+str(round(rightPWM))+rampTime+close
         ser.write(serialString.encode())
 
     #Decrement right motor speed (-)
     elif key==99: #100 is c key
-        if rightPWM - delta >= 100:
+        if (rightPWM - delta) >= int(threshold):
             rightPWM -= delta
-        serialString = start+'300'+'0'+rightPWM+rampTime+close
+        serialString = start+'300'+'0'+str(round(rightPWM))+rampTime+close
         ser.write(serialString.encode())
 
     #Increment both motors (+)
     elif key==119: #119 is w key
-        if leftPWM + delta <= 250:
+        if (leftPWM + delta) <= 250:
             leftPWM += delta
-        if rightPWM + delta <= 250:
+        if (rightPWM + delta) <= 250:
             rightPWM += delta
-        serialString = start+leftPWM+'0'+rightPWM+rampTime+close
+        serialString = start+str(round(leftPWM))+'0'+str(round(rightPWM))+rampTime+close
         ser.write(serialString.encode())
 
     #Decrement both motors (-)
     elif key==119: #119 is w key
-        if leftPWM - delta >= 100:
+        if (leftPWM - delta) >= int(threshold):
             leftPWM -= delta
-        if rightPWM - delta >= 100:
+        if (rightPWM - delta) >= int(threshold):
             rightPWM -= delta
-        serialString = start+leftPWM+'0'+rightPWM+rampTime+close
+        serialString = start+str(int(round(leftPWM)))+'0'+str(int(round(rightPWM)))+rampTime+close
         ser.write(serialString.encode())
 
     elif key==113: #113 is q key
         break
 
     else:
-        ser.write('00br000001010010;'.encode())
+        ser.write('00br001000100010;'.encode())
 
 os.system('stty sane')
 sys.exit(0)
