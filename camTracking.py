@@ -21,9 +21,19 @@ if not args.get("video", False):
 
 # otherwise, grab a reference to the video file
 else:
-        cap = cv2.VideoCapture(args["video"])
+    cap = cv2.VideoCapture(args["video"])
 
-#cap = cv2.VideoCapture(0)
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+cap.set(cv2.CAP_PROP_FPS, 30)
+
+frame_rate = cap.get(cv2.CAP_PROP_FPS)
+width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+
+print("Frame Rate: ", frame_rate)
+print("Height: ", height)
+print("Width: ", width)
 
 while(True):
     #Timer
@@ -52,12 +62,13 @@ while(True):
         #Check which corner is on top (check if marker is upright)
         if one[1] <= four[1]: #if upright
             ang = np.degrees(np.arctan((two[1]-one[1])/(one[0]-two[0])))
-        elif one[1] > four[1]: #if flipped
+        else one[1] > four[1]: #if flipped
             ang = np.degrees(np.arctan((one[0]-two[0])/(one[1]-two[1])))
             if ang>0:
                 ang+=90
             elif ang<0:
                 ang-=90
+			#Put in a case here for ang=0
         else:
             print("Error: angle")
         print("angle {0}".format(ang))
@@ -73,7 +84,7 @@ while(True):
     # End timer and print
     end = time.time()
     elapsedTime = end-start
-    print(elapsedTime)
+    #print(elapsedTime)
 
     # Display the resulting frame
     # Much faster without drawing
