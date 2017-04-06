@@ -15,7 +15,7 @@ time.sleep(0.5)
 ser.write('00br000000000500;'.encode())
 
 
-threshold = '85' #threshold pwm value for motor spin
+threshold = '10' #threshold pwm value for motor spin
 
 rampTime = '0010' #ramp time for each setpoint
 close = ';'
