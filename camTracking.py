@@ -1,3 +1,4 @@
+
 import numpy as np
 import cv2
 import cv2.aruco as aruco
@@ -59,10 +60,11 @@ while(True):
 
     if corners:
         [one, two, three, four] = corners[0][0]
+        pos = [(one[0]+three[0])/2, (one[1]+three[1])/2]
         #Check which corner is on top (check if marker is upright)
         if one[1] <= four[1]: #if upright
             ang = np.degrees(np.arctan((two[1]-one[1])/(one[0]-two[0])))
-        else one[1] > four[1]: #if flipped
+        elif one[1] > four[1]: #if flipped
             ang = np.degrees(np.arctan((one[0]-two[0])/(one[1]-two[1])))
             if ang>0:
                 ang+=90
@@ -72,6 +74,7 @@ while(True):
         else:
             print("Error: angle")
         print("angle {0}".format(ang))
+        print("position {0}".format(pos))
     #print(one)
             #print('corners: {0}'.format(corners[0][0]))
     #print(ids)
