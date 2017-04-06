@@ -36,6 +36,8 @@ print("Frame Rate: ", frame_rate)
 print("Height: ", height)
 print("Width: ", width)
 
+f = open("Log.csv", "w+")
+
 while(True):
     #Timer
     start = time.time()
@@ -57,9 +59,12 @@ while(True):
     corners, ids, rejectedImgPoints = aruco.detectMarkers(frame, aruco_dict, parameters=parameters)
 
     #Top left is (0,0)
+    pos = [0,0]
+    ang = 0
 
     if corners:
         [one, two, three, four] = corners[0][0]
+		#Position of center is average of coordinates of opposite corners
         pos = [(one[0]+three[0])/2, (one[1]+three[1])/2]
         #Check which corner is on top (check if marker is upright)
         if one[1] <= four[1]: #if upright
@@ -75,9 +80,9 @@ while(True):
             print("Error: angle")
         print("angle {0}".format(ang))
         print("position {0}".format(pos))
-    #print(one)
-            #print('corners: {0}'.format(corners[0][0]))
-    #print(ids)
+		#print(one)
+		#print('corners: {0}'.format(corners[0][0]))
+		#print(ids)
 
     frame = aruco.drawDetectedMarkers(frame, corners, ids, borderColor=(255,0,0))
     #gray = aruco.drawDetectedMarkers(gray,corners)
@@ -88,6 +93,9 @@ while(True):
     end = time.time()
     elapsedTime = end-start
     #print(elapsedTime)
+
+    #Write x, y, angle, dt to csv file (comma delineated)
+    f.write("%d,%d,%d,%f\n" %(pos[0], pos[1], ang, elapsedTime))
 
     # Display the resulting frame
     # Much faster without drawing
