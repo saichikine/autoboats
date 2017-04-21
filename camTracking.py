@@ -28,6 +28,7 @@ cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
 cap.set(cv2.CAP_PROP_FPS, 30)
 
+#CROP TO XMIN, YMIN, WIDTH, HEIGHT = [270, 80, 565, 570]
 frame_rate = cap.get(cv2.CAP_PROP_FPS)
 width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
 height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
@@ -36,7 +37,9 @@ print("Frame Rate: ", frame_rate)
 print("Height: ", height)
 print("Width: ", width)
 
-f = open("Log.csv", "w+")
+f = open("logCamTracking.csv", "w+")
+
+display = 0;
 
 while(True):
     #Timer
@@ -66,18 +69,7 @@ while(True):
         [one, two, three, four] = corners[0][0]
 		#Position of center is average of coordinates of opposite corners
         pos = [(one[0]+three[0])/2, (one[1]+three[1])/2]
-        #Check which corner is on top (check if marker is upright)
-        if one[1] <= four[1]: #if upright
-            ang = np.degrees(np.arctan((two[1]-one[1])/(one[0]-two[0])))
-        elif one[1] > four[1]: #if flipped
-            ang = np.degrees(np.arctan((one[0]-two[0])/(one[1]-two[1])))
-            if ang>0:
-                ang+=90
-            elif ang<0:
-                ang-=90
-			#Put in a case here for ang=0
-        else:
-            print("Error: angle")
+        ang = -np.degrees(np.arctan2(two[1]-one[1],two[0]-one[0]))
         print("angle {0}".format(ang))
         print("position {0}".format(pos))
 		#print(one)
@@ -86,22 +78,24 @@ while(True):
 
     frame = aruco.drawDetectedMarkers(frame, corners, ids, borderColor=(255,0,0))
     #gray = aruco.drawDetectedMarkers(gray,corners)
-
     #print(rejectedImgPoints)
+
+    # Display the resulting frame
+    # Much faster without drawing
+
+    if display:
+        cv2.imshow('frame',frame)
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
 
     # End timer and print
     end = time.time()
     elapsedTime = end-start
-    #print(elapsedTime)
+    print(elapsedTime)
 
     #Write x, y, angle, dt to csv file (comma delineated)
     f.write("%d,%d,%d,%f\n" %(pos[0], pos[1], ang, elapsedTime))
-
-    # Display the resulting frame
-    # Much faster without drawing
-    cv2.imshow('frame',frame)
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
 
 # When everything done, release the capture
 cap.release()

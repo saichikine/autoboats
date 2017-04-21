@@ -32,34 +32,39 @@ def reverseRight():
 def forwardRight():
     forRight = '00fw00020000;'
     ser.write(forRight.encode())
-    print('Left Motor in Forward')
+    print('Right Motor in Forward')
 
 ser = serial.Serial(
     port='/dev/cu.usbserial-A700eSou', #check this with "ls /dev/{tty,cu}.*"
     baudrate=57600
 )
 
-#Spin both motors at startup (startup chime)
-ser.write('00br010001000500;'.encode())
-time.sleep(0.5)
-ser.write('00br000000000500;'.encode())
-time.sleep(0.010)
 
-#Test reversal
-reverseLeft()
-time.sleep(0.005)
-reverseRight()
-time.sleep(0.010)
-
-#Spin both motors (in reverse) at startup (startup chime)
-ser.write('00br010001000500;'.encode())
-time.sleep(0.5)
-ser.write('00br000000000500;'.encode())
-time.sleep(0.010)
-
-forwardLeft()
-time.sleep(0.005)
 forwardRight()
+time.sleep(0.010)
+forwardLeft()
+
+#Spin both motors at startup (startup chime)
+# ser.write('00br010001000500;'.encode())
+# time.sleep(0.5)
+# ser.write('00br000000000500;'.encode())
+# time.sleep(0.010)
+#
+# #Test reversal
+# reverseLeft()
+# time.sleep(0.005)
+# reverseRight()
+# time.sleep(0.010)
+#
+# #Spin both motors (in reverse) at startup (startup chime)
+# ser.write('00br010001000500;'.encode())
+# time.sleep(0.5)
+# ser.write('00br000000000500;'.encode())
+# time.sleep(0.010)
+#
+# forwardLeft()
+# time.sleep(0.005)
+# forwardRight()
 
 threshold = '10' #threshold pwm value for motor spin
 
@@ -82,6 +87,8 @@ delta = 5
 #z, c decrement left, right motors by delta, respectively
 #w, s increment/decrement both motors by delta, respectively
 
+f = open("logControl.csv", "w+")
+
 while(True):
 
     tty.setcbreak(sys.stdin)
@@ -97,45 +104,82 @@ while(True):
     if key==97: #97 is a key
         if (leftPWM + delta) <= 250:
             leftPWM += delta
-        #If PWM signal below 100, add extra leading zero to format string properly
-        if leftPWM < 100:
-            serialString = start+'0'+str(round(leftPWM))+'0'+'300'+rampTime+close
-        else:
-            serialString = start+str(round(leftPWM))+'0'+'300'+rampTime+close
-        ser.write(serialString.encode())
+        if leftPWM >= 0:
+            forwardLeft()
+            #If PWM signal below 100, add extra leading zero to format string properly
+            if leftPWM < 100:
+                serialString = start+'0'+str(round(leftPWM))+'0'+'300'+rampTime+close
+            else:
+                serialString = start+str(round(leftPWM))+'0'+'300'+rampTime+close
+            ser.write(serialString.encode())
+        elif leftPWM < 0:
+            reverseLeft()
+            #If PWM signal below 100, add extra leading zero to format string properly
+            if leftPWM > -100:
+                serialString = start+'0'+str(round(-leftPWM))+'0'+'300'+rampTime+close
+            else:
+                serialString = start+str(round(-leftPWM))+'0'+'300'+rampTime+close
+            ser.write(serialString.encode())
 
     #Decrement left motor speed (-)
     elif key==122: #122 is z key
-        if (leftPWM - delta) >= int(threshold):
+        if (leftPWM - delta) >= -250:
             leftPWM -= delta
-        #If PWM signal below 100, add extra leading zero to format string properly
-        if leftPWM < 100:
-            serialString = start+'0'+str(round(leftPWM))+'0'+'300'+rampTime+close
-        else:
-            serialString = start+str(round(leftPWM))+'0'+'300'+rampTime+close
-        ser.write(serialString.encode())
+        if leftPWM >= 0:
+            forwardLeft()
+            #If PWM signal below 100, add extra leading zero to format string properly
+            if leftPWM < 100:
+                serialString = start+'0'+str(round(leftPWM))+'0'+'300'+rampTime+close
+            else:
+                serialString = start+str(round(leftPWM))+'0'+'300'+rampTime+close
+            ser.write(serialString.encode())
+        elif leftPWM < 0:
+            reverseLeft()
+            if leftPWM > -100:
+                serialString = start+'0'+str(round(-leftPWM))+'0'+'300'+rampTime+close
+            else:
+                serialString = start+str(round(-leftPWM))+'0'+'300'+rampTime+close
+            ser.write(serialString.encode())
 
     #Increment right motor speed (+)
     elif key==100: #100 is d key
         if (rightPWM + delta) <= 250:
             rightPWM += delta
-        #If PWM signal below 100, add extra leading zero to format string properly
-        if rightPWM < 100:
-            serialString = start+'300'+'0'+'0'+str(round(rightPWM))+rampTime+close
-        else:
-            serialString = start+'300'+'0'+str(round(rightPWM))+rampTime+close
-        ser.write(serialString.encode())
+        if rightPWM >= 0:
+            forwardRight()
+            #If PWM signal below 100, add extra leading zero to format string properly
+            if rightPWM < 100:
+                serialString = start+'300'+'0'+'0'+str(round(rightPWM))+rampTime+close
+            else:
+                serialString = start+'300'+'0'+str(round(rightPWM))+rampTime+close
+            ser.write(serialString.encode())
+        elif rightPWM <0:
+            reverseRight()
+            if rightPWM > -100:
+                serialString = start+'300'+'0'+'0'+str(round(-rightPWM))+rampTime+close
+            else:
+                serialString = start+'300'+'0'+str(round(-rightPWM))+rampTime+close
+            ser.write(serialString.encode())
 
     #Decrement right motor speed (-)
     elif key==99: #100 is c key
-        if (rightPWM - delta) >= int(threshold):
+        if (rightPWM - delta) >= -250:
             rightPWM -= delta
-        #If PWM signal below 100, add extra leading zero to format string properly
-        if rightPWM < 100:
-            serialString = start+'300'+'0'+'0'+str(round(rightPWM))+rampTime+close
-        else:
-            serialString = start+'300'+'0'+str(round(rightPWM))+rampTime+close
-        ser.write(serialString.encode())
+        if rightPWM >= 0:
+            forwardRight()
+            #If PWM signal below 100, add extra leading zero to format string properly
+            if rightPWM < 100:
+                serialString = start+'300'+'0'+'0'+str(round(rightPWM))+rampTime+close
+            else:
+                serialString = start+'300'+'0'+str(round(rightPWM))+rampTime+close
+            ser.write(serialString.encode())
+        elif rightPWM < 0:
+            reverseRight()
+            if rightPWM > -100:
+                serialString = start+'300'+'0'+'0'+str(round(-rightPWM))+rampTime+close
+            else:
+                serialString = start+'300'+'0'+str(round(-rightPWM))+rampTime+close
+            ser.write(serialString.encode())
 
     #Increment both motors (+)
     elif key==119: #119 is w key
@@ -143,35 +187,119 @@ while(True):
             leftPWM += delta
         if (rightPWM + delta) <= 250:
             rightPWM += delta
-
-        #If either (or both) PWM signal is below 100, add extra leading zero to format string
-        if (leftPWM < 100 and rightPWM >= 100):
-            serialString = start+'0'+str(round(leftPWM))+'0'+str(round(rightPWM))+rampTime+close
-        elif (rightPWM < 100 and leftPWM >= 100):
-            serialString = start+str(round(leftPWM))+'0'+'0'+str(round(rightPWM))+rampTime+close
-        elif (leftPWM < 100 and rightPWM < 100):
-            serialString = start+'0'+str(round(leftPWM))+'0'+'0'+str(round(rightPWM))+rampTime+close
-        else:
-            serialString = start+str(round(leftPWM))+'0'+str(round(rightPWM))+rampTime+close
-        ser.write(serialString.encode())
+        if (leftPWM >=0 and rightPWM >=0):
+            forwardLeft()
+            time.sleep(0.010)
+            forwardRight()
+            #If either (or both) PWM signal is below 100, add extra leading zero to format string
+            if (leftPWM < 100 and rightPWM >= 100):
+                serialString = start+'0'+str(round(leftPWM))+'0'+str(round(rightPWM))+rampTime+close
+            elif (rightPWM < 100 and leftPWM >= 100):
+                serialString = start+str(round(leftPWM))+'0'+'0'+str(round(rightPWM))+rampTime+close
+            elif (leftPWM < 100 and rightPWM < 100):
+                serialString = start+'0'+str(round(leftPWM))+'0'+'0'+str(round(rightPWM))+rampTime+close
+            else:
+                serialString = start+str(round(leftPWM))+'0'+str(round(rightPWM))+rampTime+close
+            ser.write(serialString.encode())
+        elif (leftPWM >= 0 and rightPWM < 0):
+            forwardLeft()
+            time.sleep(0.010)
+            reverseRight()
+            if (leftPWM < 100 and rightPWM <= -100):
+                serialString = start+'0'+str(round(leftPWM))+'0'+str(round(-rightPWM))+rampTime+close
+            elif (rightPWM > -100 and leftPWM >= 100):
+                serialString = start+str(round(leftPWM))+'0'+'0'+str(round(-rightPWM))+rampTime+close
+            elif (leftPWM < 100 and rightPWM > -100):
+                serialString = start+'0'+str(round(leftPWM))+'0'+'0'+str(round(-rightPWM))+rampTime+close
+            else:
+                serialString = start+str(round(leftPWM))+'0'+str(round(-rightPWM))+rampTime+close
+            ser.write(serialString.encode())
+        elif (leftPWM < 0 and rightPWM >= 0):
+            reverseLeft()
+            time.sleep(0.010)
+            forwardRight()
+            if (leftPWM > -100 and rightPWM >= 100):
+                serialString = start+'0'+str(round(-leftPWM))+'0'+str(round(rightPWM))+rampTime+close
+            elif (rightPWM < 100 and leftPWM <= -100):
+                serialString = start+str(round(-leftPWM))+'0'+'0'+str(round(rightPWM))+rampTime+close
+            elif (leftPWM > -100 and rightPWM < 100):
+                serialString = start+'0'+str(round(-leftPWM))+'0'+'0'+str(round(rightPWM))+rampTime+close
+            else:
+                serialString = start+str(round(-leftPWM))+'0'+str(round(rightPWM))+rampTime+close
+            ser.write(serialString.encode())
+        elif (leftPWM < 0 and rightPWM < 0):
+            reverseLeft()
+            time.sleep(0.010)
+            reverseRight()
+            if (leftPWM > -100 and rightPWM <= -100):
+                serialString = start+'0'+str(round(-leftPWM))+'0'+str(round(-rightPWM))+rampTime+close
+            elif (rightPWM > -100 and leftPWM <= -100):
+                serialString = start+str(round(-leftPWM))+'0'+'0'+str(round(-rightPWM))+rampTime+close
+            elif (leftPWM > -100 and rightPWM > -100):
+                serialString = start+'0'+str(round(-leftPWM))+'0'+'0'+str(round(-rightPWM))+rampTime+close
+            else:
+                serialString = start+str(round(-leftPWM))+'0'+str(round(-rightPWM))+rampTime+close
+            ser.write(serialString.encode())
 
     #Decrement both motors (-)
     elif key==115: #115 is s key
-        if (leftPWM - delta) >= int(threshold):
+        if (leftPWM - delta) >= -250:
             leftPWM -= delta
-        if (rightPWM - delta) >= int(threshold):
+        if (rightPWM - delta) >= -250:
             rightPWM -= delta
-
-        #If either (or both) PWM signal is below 100, add extra leading zero to format string
-        if (leftPWM < 100 and rightPWM >= 100):
-            serialString = start+'0'+str(round(leftPWM))+'0'+str(round(rightPWM))+rampTime+close
-        elif (rightPWM < 100 and leftPWM >= 100):
-            serialString = start+str(round(leftPWM))+'0'+'0'+str(round(rightPWM))+rampTime+close
-        elif (leftPWM < 100 and rightPWM < 100):
-            serialString = start+'0'+str(round(leftPWM))+'0'+'0'+str(round(rightPWM))+rampTime+close
-        else:
-            serialString = start+str(round(leftPWM))+'0'+str(round(rightPWM))+rampTime+close
-        ser.write(serialString.encode())
+        if (leftPWM >=0 and rightPWM >=0):
+            forwardLeft()
+            time.sleep(0.010)
+            forwardRight()
+            #If either (or both) PWM signal is below 100, add extra leading zero to format string
+            if (leftPWM < 100 and rightPWM >= 100):
+                serialString = start+'0'+str(round(leftPWM))+'0'+str(round(rightPWM))+rampTime+close
+            elif (rightPWM < 100 and leftPWM >= 100):
+                serialString = start+str(round(leftPWM))+'0'+'0'+str(round(rightPWM))+rampTime+close
+            elif (leftPWM < 100 and rightPWM < 100):
+                serialString = start+'0'+str(round(leftPWM))+'0'+'0'+str(round(rightPWM))+rampTime+close
+            else:
+                serialString = start+str(round(leftPWM))+'0'+str(round(rightPWM))+rampTime+close
+            ser.write(serialString.encode())
+        elif (leftPWM >= 0 and rightPWM < 0):
+            forwardLeft()
+            time.sleep(0.010)
+            reverseRight()
+            if (leftPWM < 100 and rightPWM <= -100):
+                serialString = start+'0'+str(round(leftPWM))+'0'+str(round(-rightPWM))+rampTime+close
+            elif (rightPWM > -100 and leftPWM >= 100):
+                serialString = start+str(round(leftPWM))+'0'+'0'+str(round(-rightPWM))+rampTime+close
+            elif (leftPWM < 100 and rightPWM > -100):
+                serialString = start+'0'+str(round(leftPWM))+'0'+'0'+str(round(-rightPWM))+rampTime+close
+            else:
+                serialString = start+str(round(leftPWM))+'0'+str(round(-rightPWM))+rampTime+close
+            ser.write(serialString.encode())
+        elif (leftPWM < 0 and rightPWM >= 0):
+            reverseLeft()
+            time.sleep(0.010)
+            forwardRight()
+            if (leftPWM > -100 and rightPWM >= 100):
+                serialString = start+'0'+str(round(-leftPWM))+'0'+str(round(rightPWM))+rampTime+close
+            elif (rightPWM < 100 and leftPWM <= -100):
+                serialString = start+str(round(leftPWM))+'0'+'0'+str(round(rightPWM))+rampTime+close
+            elif (leftPWM > -100 and rightPWM < 100):
+                serialString = start+'0'+str(round(-leftPWM))+'0'+'0'+str(round(rightPWM))+rampTime+close
+            else:
+                serialString = start+str(round(-leftPWM))+'0'+str(round(rightPWM))+rampTime+close
+            ser.write(serialString.encode())
+        elif (leftPWM < 0 and rightPWM < 0):
+            reverseLeft()
+            time.sleep(0.010)
+            reverseRight()
+            if (leftPWM > -100 and rightPWM <= -100):
+                serialString = start+'0'+str(round(-leftPWM))+'0'+str(round(-rightPWM))+rampTime+close
+            elif (rightPWM > -100 and leftPWM <= -100):
+                serialString = start+str(round(-leftPWM))+'0'+'0'+str(round(-rightPWM))+rampTime+close
+            elif (leftPWM > -100 and rightPWM > -100):
+                serialString = start+'0'+str(round(-leftPWM))+'0'+'0'+str(round(-rightPWM))+rampTime+close
+            else:
+                serialString = start+str(round(-leftPWM))+'0'+str(round(-rightPWM))+rampTime+close
+            ser.write(serialString.encode())
 
     elif key==113: #113 is q key
         break
@@ -181,6 +309,10 @@ while(True):
         ser.write('00br000000000500;'.encode()) #shut off motors if any other keys are pressed
 
     print('leftPWM= '+str(leftPWM)+', rightPWM= '+str(rightPWM))
+
+    #print(time.time())
+
+    f.write("%f,%f,%f\n" %(leftPWM, rightPWM, time.time()))
 
 #reset terminal, otherwise can't see what you're typing
 os.system('stty sane')
